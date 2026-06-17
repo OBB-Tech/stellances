@@ -1,10 +1,14 @@
-# Stellance
+<div align="center">
+  <img src="docs/logo.png" alt="Stellance Logo" width="120" height="120" />
+  
+  # Stellance
+  
+  **A Stellar-powered freelance payment marketplace for instant escrow and on-chain payouts.**
 
-**A Stellar-powered freelance payment marketplace for instant escrow and on-chain payouts.**
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Stellar](https://img.shields.io/badge/Stellar-XLM-blue.svg)](https://stellar.org)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+  [![Stellar](https://img.shields.io/badge/Stellar-XLM-blue.svg)](https://stellar.org)
+  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+</div>
 
 ## Why Stellance Exists
 

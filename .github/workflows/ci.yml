@@ -2,31 +2,102 @@ name: CI
 
 on:
   push:
+    branches: [main, develop]
   pull_request:
 
 jobs:
+  # ── Backend ──────────────────────────────────────────────────────────────────
   backend:
+    name: Backend (lint · test · coverage)
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Install and test backend
-        run: |
-          cd stellance/backend
-          npm install
-          npm run test --if-present
+    defaults:
+      run:
+        working-directory: stellance/backend
 
-  frontend:
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Install and build frontend
-        run: |
-          cd stellance/frontend
-          npm install
-          npm run build --if-present
+          cache: 'npm'
+          cache-dependency-path: stellance/backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests with coverage
+        run: npm run test:cov
+        env:
+          NODE_ENV: test
+          JWT_SECRET: ci-test-secret
+          JWT_ACCESS_EXPIRES_IN: 15m
+          JWT_REFRESH_DAYS: 30
+          REFRESH_TOKEN_PEPPER: ci-pepper
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: stellance/backend/coverage/
+          retention-days: 7
+
+  # ── Frontend ─────────────────────────────────────────────────────────────────
+  frontend:
+    name: Frontend (lint · build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: stellance/frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: stellance/frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+  # ── Soroban Contracts ────────────────────────────────────────────────────────
+  contracts:
+    name: Contracts (build · test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: stellance/Contracts
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            stellance/Contracts/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('stellance/Contracts/Cargo.toml') }}
+
+      - name: Build contract (WASM)
+        run: cargo build --target wasm32-unknown-unknown --release
+
+      - name: Run contract tests
+        run: cargo test

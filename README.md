@@ -5,6 +5,7 @@
   
   **A Stellar-powered freelance payment marketplace for instant escrow and on-chain payouts.**
 
+  [![CI](https://github.com/alone-in/stellances/actions/workflows/ci.yml/badge.svg)](https://github.com/alone-in/stellances/actions/workflows/ci.yml)
   [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
   [![Stellar](https://img.shields.io/badge/Stellar-XLM-blue.svg)](https://stellar.org)
   [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
@@ -77,7 +78,7 @@ Stellance is a natural fit for Stellar Wave because it:
 ### Blockchain
 - Stellar network
 - Horizon API
-- Soroban smart contracts (planned companion repo)
+- Soroban smart contracts (in-repo: `stellance/Contracts/`)
 
 ### Wallet
 - Stellar wallet integration (Freighter-ready)
@@ -85,12 +86,20 @@ Stellance is a natural fit for Stellar Wave because it:
 ## Repository Structure
 
 ```
-stellance/
-├── backend/                      # NestJS backend API
-├── frontend/                     # Next.js frontend app
-├── .github/                      # CI workflows and issue templates
-├── CONTRIBUTING.md               # Contribution guide
-├── LICENSE                       # Open source license
+stellances/                       # Root
+├── stellance/
+│   ├── backend/                  # NestJS API (auth, jobs, contracts, payments)
+│   ├── frontend/                 # Next.js app (marketplace UI, Stellar demo)
+│   └── Contracts/                # Soroban smart contracts (Rust)
+├── .github/
+│   ├── workflows/ci.yml          # CI: lint · test · coverage · contract build
+│   ├── ISSUE_TEMPLATE/           # Contributor application templates
+│   └── pull_request_template.md  # PR checklist
+├── docs/                         # Project assets (logo)
+├── CHANGELOG.md                  # Version history
+├── CONTRIBUTING.md               # Architecture, data models, dev setup
+├── SECURITY.md                   # Vulnerability disclosure policy
+├── LICENSE                       # MIT
 └── README.md                     # Project overview
 ```
 
@@ -120,14 +129,17 @@ cd stellances
 cd stellance/backend
 npm install
 cp .env.example .env
+# Edit .env — set DATABASE_URL and JWT_SECRET at minimum
 npx prisma migrate dev
 npm run start:dev
 ```
 
+API runs at `http://localhost:3001/api` · Swagger docs at `http://localhost:3001/docs`
+
 ### Frontend setup
 
 ```bash
-cd ../frontend
+cd stellance/frontend
 npm install
 npm run dev
 ```
@@ -175,3 +187,11 @@ We are inclusive, respectful, and constructive.
 ## License
 
 This project is licensed under the MIT License.
+
+## Security
+
+To report a vulnerability, see [SECURITY.md](SECURITY.md).
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for a history of notable changes.

@@ -67,12 +67,11 @@ Stellance is a **decentralized freelance payment platform** that eliminates trad
 
 | Layer | Technology | Purpose |
 |-------|-----------|---------|
-| **Frontend** | Next.js 14 (App Router) | User interface, wallet connection |
+| **Frontend** | Next.js 16 (App Router) | User interface, wallet connection |
 | **Backend** | NestJS | API, business logic, Stellar integration |
 | **Database** | PostgreSQL + Prisma | Store users, jobs, contracts, payments |
 | **Blockchain** | Stellar (XLM/USDC) | Payment rails, escrow |
 | **Smart Contracts** | Soroban (Rust) | Trustless escrow logic |
-| **Monorepo** | Turborepo | Manage multiple packages |
 
 ---
 
@@ -379,49 +378,44 @@ async fundEscrow(contractId: string, amount: number) {
 
 ```bash
 # 1. Clone the repo
-git clone https://github.com/yourusername/stellance.git
-cd stellance
+git clone https://github.com/alone-in/stellances.git
+cd stellances
 
-# 2. Install dependencies
+# 2. Install backend dependencies
+cd stellance/backend
 npm install
 
-# 3. Start PostgreSQL (via Docker)
-docker-compose up -d
+# 3. Set up backend environment
+cp .env.example .env
+# Edit .env — set DATABASE_URL and JWT_SECRET at minimum
 
-# 4. Set up environment variables
-cp apps/api/.env.example apps/api/.env
-cp apps/web/.env.example apps/web/.env
-
-# Edit .env files with your config:
-# - Database URL
-# - JWT secret
-# - Stellar keypairs (testnet)
-
-# 5. Run database migrations
-cd apps/api
+# 4. Run database migrations
 npx prisma migrate dev
 
-# 6. Start development servers
-cd ../..
-npm run dev
+# 5. Start the backend
+npm run start:dev
+# → http://localhost:3001/api  (Swagger: http://localhost:3001/docs)
 
-# Frontend: http://localhost:3000
-# Backend:  http://localhost:3001
+# 6. In a new terminal, install and start the frontend
+cd stellance/frontend
+npm install
+npm run dev
+# → http://localhost:3000  (Stellar demo: http://localhost:3000/demo)
 ```
 
 ### Environment Variables
 
-**Backend (`apps/api/.env`)**
+**Backend (`stellance/backend/.env`)**
 ```env
 DATABASE_URL=postgresql://stellance:stellance_pass@localhost:5432/stellance
 JWT_SECRET=your_random_secret_here
-STELLAR_NETWORK=testnet
-STELLAR_HORIZON_URL=https://horizon-testnet.stellar.org
-ESCROW_PUBLIC_KEY=GABC...
-ESCROW_SECRET_KEY=SABC...
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_DAYS=30
+REFRESH_TOKEN_PEPPER=your_random_pepper_here
+FRONTEND_URL=http://localhost:3000
 ```
 
-**Frontend (`apps/web/.env.local`)**
+**Frontend (`stellance/frontend/.env.local`)**
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3001/api
 NEXT_PUBLIC_STELLAR_NETWORK=testnet

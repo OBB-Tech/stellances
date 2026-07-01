@@ -1,0 +1,34 @@
+# ─── Node ─────────────────────────────────────────────────────────────────────
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ─── Next.js ──────────────────────────────────────────────────────────────────
+stellance/frontend/.next/
+stellance/frontend/out/
+
+# ─── NestJS / build ───────────────────────────────────────────────────────────
+stellance/backend/dist/
+stellance/backend/coverage/
+
+# ─── Rust / Soroban ───────────────────────────────────────────────────────────
+stellance/Contracts/target/
+
+# ─── Environment & secrets ────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# ─── OS / editor ──────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ─── Prisma generated ─────────────────────────────────────────────────────────
+stellance/backend/src/generated/

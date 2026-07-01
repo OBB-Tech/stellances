@@ -1,20 +1,58 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AppController } from './../src/app.controller';
-import { AppService } from './../src/app.service';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
+import * as request from 'supertest';
+import { AppModule } from './../src/app.module';
 
-describe('AppController (e2e)', () => {
-  let controller: AppController;
+/**
+ * E2E smoke tests.
+ *
+ * These tests require a running PostgreSQL instance pointed to by DATABASE_URL.
+ * In CI the database is not available, so these tests are skipped unless
+ * DATABASE_URL is set and does not contain the placeholder value.
+ */
+const SKIP_E2E =
+  !process.env.DATABASE_URL ||
+  process.env.DATABASE_URL.includes('placeholder');
 
-  beforeEach(async () => {
+(SKIP_E2E ? describe.skip : describe)('AppController (e2e)', () => {
+  let app: INestApplication;
+
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      controllers: [AppController],
-      providers: [AppService],
+      imports: [AppModule],
     }).compile();
 
-    controller = moduleFixture.get(AppController);
+    app = moduleFixture.createNestApplication();
+    app.setGlobalPrefix('api');
+    app.useGlobalPipes(
+      new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+      }),
+    );
+    await app.init();
   });
 
-  it('/ (GET)', () => {
-    expect(controller.getHello()).toBe('Hello World!');
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('GET /api returns 200', () => {
+    return request(app.getHttpServer()).get('/api').expect(200);
+  });
+
+  it('POST /api/auth/register with invalid body returns 400', () => {
+    return request(app.getHttpServer())
+      .post('/api/auth/register')
+      .send({ email: 'not-an-email' })
+      .expect(400);
+  });
+
+  it('POST /api/auth/login with wrong credentials returns 401', () => {
+    return request(app.getHttpServer())
+      .post('/api/auth/login')
+      .send({ email: 'nobody@example.com', password: 'wrong' })
+      .expect(401);
   });
 });

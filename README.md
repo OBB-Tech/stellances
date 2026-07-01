@@ -114,6 +114,16 @@ Current focus:
 - Developer onboarding and contributor workflows
 - Project documentation for the Stellar Wave community
 
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [docs/architecture.md](docs/architecture.md) | Full system architecture — component map, layer breakdown, Soroban contract design, auth flow, key decisions |
+| [docs/escrow-flow.md](docs/escrow-flow.md) | Escrow, milestone and dispute flows with state machines and sequence diagrams |
+| [docs/api-reference.md](docs/api-reference.md) | Full API reference — request/response shapes, auth, error format |
+| [docs/local-development.md](docs/local-development.md) | Local setup guide (backend, frontend, contracts, common issues) |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Architecture overview, data models, user flows, how to pick and submit an issue |
+
 ## Getting Started
 
 ### Clone the repository
@@ -123,7 +133,9 @@ git clone https://github.com/alone-in/stellances.git
 cd stellances
 ```
 
-### Backend setup
+See [docs/local-development.md](docs/local-development.md) for the full setup guide including PostgreSQL options, environment variables, contract builds, and common troubleshooting.
+
+### Backend setup (quick start)
 
 ```bash
 cd stellance/backend

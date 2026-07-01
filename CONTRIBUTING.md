@@ -77,86 +77,109 @@ Stellance is a **decentralized freelance payment platform** that eliminates trad
 
 ## 📊 Data Models
 
+The source of truth is `stellance/backend/prisma/schema.prisma`. The models below mirror it exactly.
+
+### Enums
+
+```typescript
+UserRole:        CLIENT | FREELANCER | ADMIN
+JobStatus:       OPEN | IN_PROGRESS | COMPLETED | CANCELLED
+ContractStatus:  ACTIVE | COMPLETED | DISPUTED | CANCELLED
+MilestoneStatus: PENDING | IN_REVIEW | APPROVED | PAID
+```
+
 ### Core Entities
 
 ```typescript
-// User — both freelancers and clients
+// User — clients, freelancers, and admins
 User {
-  id: string
-  email: string
-  name: string
-  role: "freelancer" | "client"
-  stellarPublicKey: string  // Their wallet address
-  bio?: string
-  skills?: string[]
-  createdAt: DateTime
+  id:               string    // UUID primary key
+  email:            string    // unique
+  name:             string
+  role:             UserRole
+  password:         string    // argon2 hash — never returned in API responses
+  stellarPublicKey: string?   // unique — the user's Stellar wallet address
+  tokenVersion:     number    // incremented on logout-all to invalidate all sessions
+  createdAt:        DateTime
+  updatedAt:        DateTime
 }
 
 // Job — posted by clients
 Job {
-  id: string
-  title: string
+  id:          string
+  title:       string
   description: string
-  budget: number
-  currency: "XLM" | "USDC"
-  category: string
-  status: "open" | "in_progress" | "completed" | "cancelled"
-  clientId: string  // FK to User
-  createdAt: DateTime
+  budget:      Decimal    // 18 digits, 7 decimal places (Decimal(18,7))
+  category:    string
+  status:      JobStatus
+  clientId:    string     // FK → User
+  createdAt:   DateTime
+  updatedAt:   DateTime
 }
 
-// Contract — created when client hires freelancer
+// Contract — created when a client hires a freelancer for a job
 Contract {
-  id: string
-  jobId: string  // FK to Job
-  freelancerId: string  // FK to User
-  clientId: string  // FK to User
-  status: "pending" | "active" | "completed" | "disputed" | "cancelled"
-  totalAmount: number
-  currency: "XLM" | "USDC"
-  escrowTxHash?: string  // Stellar transaction hash
-  createdAt: DateTime
+  id:           string
+  jobId:        string         // FK → Job (unique — one contract per job)
+  freelancerId: string         // FK → User
+  clientId:     string         // FK → User
+  status:       ContractStatus
+  escrowTxHash: string?        // unique — Stellar tx hash that funded the escrow
+  createdAt:    DateTime
+  updatedAt:    DateTime
 }
 
-// Milestone — optional breakdown of contract into phases
+// Milestone — a deliverable phase within a contract
 Milestone {
-  id: string
-  contractId: string  // FK to Contract
-  title: string
-  description: string
-  amount: number
-  status: "pending" | "in_progress" | "submitted" | "approved" | "paid"
-  order: number
+  id:         string
+  contractId: string          // FK → Contract
+  title:      string
+  amount:     Decimal         // portion of contract value for this milestone
+  status:     MilestoneStatus
+  createdAt:  DateTime
+  updatedAt:  DateTime
 }
 
-// Payment — record of funds released
+// Payment — an on-chain fund release, one per milestone approval
 Payment {
-  id: string
-  contractId: string  // FK to Contract
-  amount: number
-  currency: "XLM" | "USDC"
-  stellarTxHash: string  // Link to blockchain transaction
-  fromAddress: string
-  toAddress: string
-  createdAt: DateTime
+  id:            string
+  contractId:    string    // FK → Contract
+  milestoneId:   string?   // FK → Milestone (unique — one payment per milestone)
+  amount:        Decimal
+  stellarTxHash: string    // unique — the Stellar tx that transferred funds
+  createdAt:     DateTime
 }
 ```
 
 ### Relationships
 
 ```
-User (Client) ──┬─── has many ───► Job
-                │
-                └─── has many ───► Contract (as client)
+User ──────────────┬── jobs[]               (as CLIENT)
+                   ├── contractsAsClient[]   (as CLIENT)
+                   ├── contractsAsFreelancer[] (as FREELANCER)
+                   └── refreshTokens[]
 
-User (Freelancer) ─── has many ───► Contract (as freelancer)
+Job ───────────────── contract?             (one-to-one, optional)
 
-Job ─── has one ───► Contract
+Contract ──────────┬── milestones[]
+                   └── payments[]
 
-Contract ──┬─── has many ───► Milestone
-           │
-           └─── has many ───► Payment
+Milestone ─────────── payment?             (one-to-one, optional)
+
+Payment ────────────── (belongs to Contract + optional Milestone)
 ```
+
+### Key Stellar fields
+
+Two fields link the off-chain database to the Stellar blockchain:
+
+| Field | Model | Description |
+|-------|-------|-------------|
+| `stellarPublicKey` | `User` | The user's Stellar account address |
+| `escrowTxHash` | `Contract` | Hash of the Soroban `fund()` transaction |
+| `stellarTxHash` | `Payment` | Hash of the Soroban `release()` or `refund()` transaction |
+
+Any payment can be independently verified on [stellar.expert](https://stellar.expert/explorer/testnet) using its `stellarTxHash`.
 
 ---
 

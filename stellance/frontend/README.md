@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Stellance — Frontend
 
-## Getting Started
+Next.js 16 frontend for Stellance, the Stellar-powered freelance payment marketplace.
 
-First, run the development server:
+## Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 16 (App Router) |
+| Styling | Tailwind CSS 4 |
+| Stellar | stellar-sdk 10 (testnet demo) |
+| Language | TypeScript |
+
+## Pages
+
+| Route | Description |
+|-------|-------------|
+| `/` | Marketing landing page |
+| `/demo` | Interactive Stellar testnet demo — create a keypair, fund via Friendbot, send XLM |
+
+## Quick Start
 
 ```bash
+cd stellance/frontend
+npm install
+
+# Create environment file
+cp /dev/null .env.local
+# Add these two lines:
+# NEXT_PUBLIC_API_URL=http://localhost:3001/api
+# NEXT_PUBLIC_STELLAR_NETWORK=testnet
+
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The backend must be running at `http://localhost:3001` for API features.  
+See [docs/local-development.md](../../docs/local-development.md) for the full setup guide.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Environment Variables
 
-## Learn More
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `NEXT_PUBLIC_API_URL` | Backend API base URL | `http://localhost:3001/api` |
+| `NEXT_PUBLIC_STELLAR_NETWORK` | `testnet` or `mainnet` | `testnet` |
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run dev      # Development server with hot reload
+npm run build    # Production build
+npm run start    # Start production server
+npm run lint     # ESLint
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+app/
+├── layout.tsx          # Root layout — fonts, global styles
+├── page.tsx            # Marketing landing page
+├── globals.css         # Tailwind base styles
+└── demo/
+    └── page.tsx        # Stellar testnet demo
+public/
+├── logo.png
+└── free.jpeg
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Stellar Demo
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The `/demo` page demonstrates the core Stellar integration without requiring a wallet extension:
+
+1. Generates a fresh Stellar keypair client-side using `stellar-sdk`
+2. Funds the account via [Friendbot](https://laboratory.stellar.org/#account-creator?network=test) (testnet faucet)
+3. Constructs, signs, and submits a 1 XLM payment transaction to the Stellar testnet
+4. Returns a transaction hash verifiable on [stellar.expert](https://stellar.expert/explorer/testnet)
+
+This is for demonstration only — no real funds are involved.
+
+## What's Coming
+
+- Freighter wallet connection
+- Job marketplace UI (browse, filter, post)
+- Client dashboard (post jobs, fund escrow, approve milestones)
+- Freelancer dashboard (active contracts, submit milestones)
+- On-chain payment status tracking

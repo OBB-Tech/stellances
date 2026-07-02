@@ -30,7 +30,29 @@ cd stellances
 
 ## 2. Start PostgreSQL
 
-### Option A — Docker (recommended, no PostgreSQL install needed)
+### Option A — Docker Compose (recommended)
+
+A `docker-compose.yml` is included in the repo root:
+
+```bash
+# from the repo root
+docker compose up -d
+
+# Stop later
+docker compose down
+
+# Stop and remove data volume (full reset)
+docker compose down -v
+```
+
+This starts PostgreSQL 16 on port 5432 with:
+- User: `stellance`
+- Password: `stellance_pass`
+- Database: `stellance`
+
+These match the defaults in `stellance/backend/.env.example`.
+
+### Option B — Docker (standalone)
 
 ```bash
 docker run --name stellance-db \
@@ -47,7 +69,7 @@ docker stop stellance-db
 docker start stellance-db
 ```
 
-### Option B — Local PostgreSQL
+### Option C — Local PostgreSQL
 
 Create a database manually:
 ```sql
@@ -101,7 +123,13 @@ cd stellance/frontend
 npm install
 ```
 
-Create `stellance/frontend/.env.local`:
+Copy the environment template:
+
+```bash
+cp .env.local.example .env.local
+```
+
+The defaults work for local development. If your backend runs on a different port, edit `.env.local`:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3001/api
@@ -128,6 +156,22 @@ cargo test
 ```
 
 The compiled WASM outputs to `target/wasm32-unknown-unknown/release/stellance_contract.wasm`.
+
+---
+
+## 6. (Optional) Set up Freighter wallet
+
+[Freighter](https://www.freighter.app/) is the Stellar browser extension wallet used to sign transactions from the frontend. You'll need it when developing the escrow or milestone payment flows.
+
+**Install Freighter:**
+1. Install the extension for [Chrome](https://chromewebstore.google.com/detail/freighter/bcacfldlkkdogcmkkibnjlakofdplcbk) or [Firefox](https://addons.mozilla.org/en-US/firefox/addon/freighter-wallet/)
+2. Open the extension and create a new wallet (or import an existing one)
+3. Switch the network to **Testnet** (Settings → Network → Testnet)
+4. Get free testnet XLM: open `http://localhost:3000/demo`, or use the [Stellar Friendbot](https://laboratory.stellar.org/#account-creator?network=test) directly with your Freighter public key
+
+**Finding your Freighter public key:** click the account icon in the top right of the Freighter popup. The public key starts with `G`.
+
+> The `/demo` page at `http://localhost:3000/demo` generates a disposable keypair in the browser without Freighter — it's the fastest way to test the Stellar integration without any wallet setup.
 
 ---
 

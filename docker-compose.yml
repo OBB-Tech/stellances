@@ -1,0 +1,32 @@
+# Stellance — local development compose
+#
+# Usage:
+#   docker compose up -d          # start postgres (detached)
+#   docker compose down           # stop and remove containers
+#   docker compose down -v        # also remove the postgres data volume
+#
+# After starting, follow the rest of the setup in docs/local-development.md.
+
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: stellance-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: stellance
+      POSTGRES_PASSWORD: stellance_pass
+      POSTGRES_DB: stellance
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stellance -d stellance"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

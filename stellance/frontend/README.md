@@ -24,11 +24,9 @@ Next.js 16 frontend for Stellance, the Stellar-powered freelance payment marketp
 cd stellance/frontend
 npm install
 
-# Create environment file
-cp /dev/null .env.local
-# Add these two lines:
-# NEXT_PUBLIC_API_URL=http://localhost:3001/api
-# NEXT_PUBLIC_STELLAR_NETWORK=testnet
+# Copy environment template
+cp .env.local.example .env.local
+# Edit .env.local if needed (defaults work for local development)
 
 npm run dev
 ```

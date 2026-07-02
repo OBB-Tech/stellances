@@ -333,6 +333,7 @@ Refresh tokens stored in `localStorage` are accessible to JavaScript and vulnera
 | Full Soroban escrow contract | Trustless custody | GitHub Issues |
 | Freighter wallet integration (frontend) | User signing | GitHub Issues |
 | Marketplace UI pages | User-facing product | GitHub Issues |
-| docker-compose | Local dev ergonomics | GitHub Issues |
+| PATCH /users/me | Save Stellar wallet address | GitHub Issues |
+| docker-compose | Local dev ergonomics | ✅ Added (`docker-compose.yml` in repo root) |
 
 See the [CHANGELOG](../CHANGELOG.md) for what has been shipped.

@@ -14,6 +14,7 @@ Interactive docs (Swagger): `http://localhost:3001/docs`
   - [POST /auth/logout-all](#post-authlogout-all)
 - [User Endpoints](#user-endpoints)
   - [GET /users/me](#get-usersme)
+  - [PATCH /users/me](#patch-usersme-planned)
 - [Jobs Endpoints](#jobs-endpoints-planned)
 - [Contracts Endpoints](#contracts-endpoints-planned)
 - [Milestones Endpoints](#milestones-endpoints-planned)
@@ -237,6 +238,40 @@ The `password` field is never returned. `stellarPublicKey` is `null` until the u
 | Status | Meaning |
 |--------|---------|
 | 401 | Missing or expired access token |
+
+---
+
+### PATCH /users/me (Planned)
+
+> **Status:** not yet implemented. This endpoint is needed to let users save their Stellar wallet address after connecting Freighter.
+
+Update the authenticated user's profile. All fields are optional; only the provided fields are updated.
+
+**Auth required:** Yes
+
+**Request body:**
+
+```json
+{
+  "name": "Alice Smith",
+  "stellarPublicKey": "GDQOE23CFSUMSVQK4Y5JHPPYK73VYCNHZHA7ENKCV37P6SUEO6XQBKPP"
+}
+```
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `name` | string | Display name |
+| `stellarPublicKey` | string | Must be a valid Stellar public key (starts with `G`, 56 chars). Each key can only be linked to one account. |
+
+**Response `200 OK`:** Updated user object (same shape as `GET /users/me`).
+
+**Errors:**
+
+| Status | Meaning |
+|--------|---------|
+| 400 | Invalid Stellar public key format |
+| 401 | Missing or expired access token |
+| 409 | Stellar public key already linked to another account |
 
 ---
 

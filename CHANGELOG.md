@@ -7,13 +7,28 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- `docker-compose.yml` — PostgreSQL 16 service for local development (resolves references in multiple docs that pointed to a missing file)
+- `stellance/frontend/.env.local.example` — environment template; contributors now run `cp .env.local.example .env.local` instead of creating the file manually
+- `PATCH /users/me` documented in `docs/api-reference.md` as a planned endpoint (needed to save Stellar public key after wallet connection)
+- Freighter wallet setup guide added to `docs/local-development.md` (step 6)
+
+### Fixed
+- `CONTRIBUTING.md` — response format examples corrected from `{success:true, data:{...}}` to the actual flat format (`{message, access_token, user}`)
+- `CONTRIBUTING.md` — endpoint list corrected: `/auth/me` → `/users/me`; `/users/:id` patterns replaced with `/users/me`; milestone/contract paths updated to match `docs/api-reference.md`
+- `CONTRIBUTING.md` — dev setup now uses `docker compose up -d` and `cp .env.local.example .env.local`
+- `stellance/backend/README.md` — docker-compose reference now points to the actual file
+- `stellance/frontend/README.md` — quick start now uses `cp .env.local.example .env.local`
+- `docs/local-development.md` — Docker section rewritten to use `docker compose up -d`; frontend setup uses `.env.local.example`
+- `docs/architecture.md` — docker-compose row in "What Is Not Yet Built" table updated to ✅ Added
+
 ### Planned
 - Soroban escrow contract: `fund`, `release`, `refund`, `dispute` functions
 - Jobs API endpoints (list, create, apply)
 - Contracts API endpoints (create, approve, dispute)
 - Freighter wallet connection in frontend
 - Frontend marketplace pages (jobs list, job detail, dashboard)
-- docker-compose for local development
+- `PATCH /users/me` backend implementation
 
 ---
 

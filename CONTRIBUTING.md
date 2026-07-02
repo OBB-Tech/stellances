@@ -240,12 +240,13 @@ Authorization: Bearer <jwt_token>
 
 ```
 POST   /auth/register          - Create new user
-POST   /auth/login             - Get JWT token
-GET    /auth/me                - Get current user
+POST   /auth/login             - Get JWT token + refresh token cookie
+POST   /auth/refresh           - Rotate refresh token, get new access token
+POST   /auth/logout            - Revoke current session
+POST   /auth/logout-all        - Revoke all sessions
 
-GET    /users/:id              - Get user profile
-PATCH  /users/:id              - Update profile
-POST   /users/:id/wallet       - Save Stellar public key
+GET    /users/me               - Get current user profile  ← implemented
+PATCH  /users/me               - Update profile / set Stellar public key  ← planned
 
 GET    /jobs                   - List all jobs (with filters)
 GET    /jobs/:id               - Get single job
@@ -257,38 +258,64 @@ POST   /jobs/:id/apply         - Apply to job (freelancer only)
 POST   /contracts              - Create contract (when hiring)
 GET    /contracts              - List user's contracts
 GET    /contracts/:id          - Get contract details
-PATCH  /contracts/:id/submit   - Submit work (freelancer)
-PATCH  /contracts/:id/approve  - Approve & release funds (client)
-PATCH  /contracts/:id/dispute  - Open dispute
+POST   /contracts/:id/confirm-fund    - Confirm on-chain escrow funding
+PATCH  /contracts/:id/milestones/:mid/submit  - Submit work (freelancer)
+PATCH  /contracts/:id/milestones/:mid/approve - Approve & release funds (client)
+POST   /contracts/:id/dispute  - Open dispute
 
 GET    /payments               - List payments
 GET    /payments/:id           - Get payment details
-
-POST   /escrow/fund            - Client funds escrow
-POST   /escrow/release         - Release funds to freelancer
-POST   /escrow/refund          - Refund to client
 ```
 
 ### Response Format
 
-All responses follow this structure:
+Responses are flat objects — there is no top-level `success` wrapper. The exact shape depends on the endpoint. Auth endpoints look like:
 
 ```typescript
-// Success
+// POST /auth/register → 201
 {
-  success: true,
-  data: { ... }
+  message: "Registered successfully",
+  access_token: "eyJhbGci...",
+  user: { id, email, name, role, stellarPublicKey, tokenVersion, createdAt, updatedAt }
 }
 
-// Error
+// POST /auth/login → 200
 {
-  success: false,
-  error: {
-    code: "UNAUTHORIZED",
-    message: "Invalid credentials"
-  }
+  message: "Logged in successfully",
+  access_token: "eyJhbGci...",
+  user: { id, email, name, role, stellarPublicKey }
+}
+
+// POST /auth/refresh → 200
+{
+  access_token: "eyJhbGci..."
+}
+
+// POST /auth/logout → 200
+{
+  message: "Logged out successfully"
 }
 ```
+
+Errors use NestJS's standard format:
+
+```typescript
+// Validation error
+{
+  statusCode: 400,
+  message: ["email must be an email", "password must be longer than or equal to 8 characters"],
+  error: "Bad Request"
+}
+
+// Auth error
+{
+  statusCode: 401,
+  message: "Invalid credentials",
+  error: "Unauthorized"
+}
+```
+
+See [docs/api-reference.md](docs/api-reference.md) for the full request/response reference.
 
 ---
 
@@ -404,24 +431,29 @@ async fundEscrow(contractId: string, amount: number) {
 git clone https://github.com/alone-in/stellances.git
 cd stellances
 
-# 2. Install backend dependencies
+# 2. Start PostgreSQL (requires Docker)
+docker compose up -d
+
+# 3. Install backend dependencies
 cd stellance/backend
 npm install
 
-# 3. Set up backend environment
+# 4. Set up backend environment
 cp .env.example .env
-# Edit .env — set DATABASE_URL and JWT_SECRET at minimum
+# Edit .env — set JWT_SECRET and REFRESH_TOKEN_PEPPER to random strings
+# DATABASE_URL default matches the docker-compose settings
 
-# 4. Run database migrations
+# 5. Run database migrations
 npx prisma migrate dev
 
-# 5. Start the backend
+# 6. Start the backend
 npm run start:dev
 # → http://localhost:3001/api  (Swagger: http://localhost:3001/docs)
 
-# 6. In a new terminal, install and start the frontend
+# 7. In a new terminal, install and start the frontend
 cd stellance/frontend
 npm install
+cp .env.local.example .env.local
 npm run dev
 # → http://localhost:3000  (Stellar demo: http://localhost:3000/demo)
 ```
@@ -439,6 +471,13 @@ FRONTEND_URL=http://localhost:3000
 ```
 
 **Frontend (`stellance/frontend/.env.local`)**
+
+Copy the provided template:
+```bash
+cp stellance/frontend/.env.local.example stellance/frontend/.env.local
+```
+
+Default values:
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:3001/api
 NEXT_PUBLIC_STELLAR_NETWORK=testnet

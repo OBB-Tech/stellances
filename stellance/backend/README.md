@@ -17,7 +17,7 @@ NestJS REST API for Stellance. Handles authentication, user management, jobs, co
 ### Prerequisites
 
 - Node.js ≥ 20
-- PostgreSQL running locally (or use Docker — see root `docker-compose.yml`)
+- PostgreSQL running locally (or Docker — use `docker-compose.yml` in the repo root)
 
 ### Setup
 
